@@ -1,0 +1,54 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="logo-area">
+      <span class="logo-icon">⚖️</span>
+      <h1>LegalOS</h1>
+      <p class="tagline">Le Système d'Exploitation pour Cabinets d'Avocats</p>
+    </div>
+
+    <form (submit)="onSubmit($event)">
+      <div class="form-group">
+        <label for="email">Adresse Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="email" 
+          class="form-control" 
+          placeholder="avocat@cabinet.com" 
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="password" 
+          class="form-control" 
+          placeholder="••••••••" 
+          required
+        >
+      </div>
+
+      <div *ngIf="errorMessage" class="error-msg">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" class="btn w-100" [disabled]="isLoading">
+        {{ isLoading ? 'Connexion en cours...' : 'Se Connecter' }}
+      </button>
+    </form>
+
+    <div class="demo-login-box">
+      <h3>Connexion rapide de démo :</h3>
+      <div class="demo-buttons">
+        <button type="button" class="btn-demo" (click)="loginAs('avocat')">Avocat</button>
+        <button type="button" class="btn-demo" (click)="loginAs('secretaire')">Secrétaire</button>
+        <button type="button" class="btn-demo" (click)="loginAs('comptable')">Comptable</button>
+      </div>
+    </div>
+  </div>
+</div>

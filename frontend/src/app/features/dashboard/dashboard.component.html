@@ -1,0 +1,297 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="logo-icon">⚖️</span>
+      <h2>LegalOS</h2>
+    </div>
+    
+    <nav class="nav-links">
+      <button 
+        *ngIf="hasAccess('dashboard')"
+        [class.active]="activeTab === 'dashboard'" 
+        (click)="activeTab = 'dashboard'"
+      >
+        📊 Tableau de bord
+      </button>
+      <button 
+        *ngIf="hasAccess('cases')"
+        [class.active]="activeTab === 'cases'" 
+        (click)="activeTab = 'cases'"
+      >
+        📂 Dossiers
+      </button>
+      <button 
+        *ngIf="hasAccess('calendar')"
+        [class.active]="activeTab === 'calendar'" 
+        (click)="activeTab = 'calendar'"
+      >
+        📅 Calendrier
+      </button>
+      <button 
+        *ngIf="hasAccess('ia')"
+        [class.active]="activeTab === 'ia'" 
+        (click)="activeTab = 'ia'"
+      >
+        🤖 Assistant IA
+      </button>
+      <button 
+        *ngIf="hasAccess('billing')"
+        [class.active]="activeTab === 'billing'" 
+        (click)="activeTab = 'billing'"
+      >
+        💳 Facturation
+      </button>
+      <button 
+        *ngIf="hasAccess('archives')"
+        [class.active]="activeTab === 'archives'" 
+        (click)="activeTab = 'archives'"
+      >
+        🗄️ Archives & Précédents
+      </button>
+    </nav>
+
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <span class="user-badge">{{ userRole }}</span>
+        <span class="user-email" [title]="userEmail">{{ userEmail }}</span>
+      </div>
+      <button class="btn-logout" (click)="logout()">🚪 Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-title">
+        <h1>Cabinet d'Avocat Diallo & Associés</h1>
+        <p>Dashboard de gestion intégrée</p>
+      </div>
+      <div class="quick-stats">
+        <div class="quick-stat-item">
+          <span class="label">Date</span>
+          <span class="value">03 Juillet 2026</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab Contents -->
+    <div class="tab-viewport">
+      <!-- 1. DASHBOARD VIEW -->
+      <div *ngIf="activeTab === 'dashboard'" class="tab-pane">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <h3>Dossiers Actifs</h3>
+            <p class="kpi-value">42</p>
+            <span class="kpi-trend positive">↑ +3 ce mois</span>
+          </div>
+          <div class="kpi-card">
+            <h3>Audiences de la Semaine</h3>
+            <p class="kpi-value">7</p>
+            <span class="kpi-trend warning">Prochaine demain à 09h</span>
+          </div>
+          <div class="kpi-card">
+            <h3>Taux de réussite</h3>
+            <p class="kpi-value">88 %</p>
+            <span class="kpi-trend positive">Stable</span>
+          </div>
+          <div class="kpi-card" *ngIf="userRole !== 'SECRETAIRE'">
+            <h3>Temps facturable</h3>
+            <p class="kpi-value">28.5 h</p>
+            <span class="kpi-trend">Objectif: 40h</span>
+          </div>
+
+        </div>
+
+        <div class="dashboard-sections">
+          <!-- Recent Cases -->
+          <div class="section-card">
+            <h2>Dossiers Récents</h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Réf</th>
+                    <th>Titre</th>
+                    <th>Client</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let case of recentCases">
+                    <td><code>{{ case.ref }}</code></td>
+                    <td>{{ case.title }}</td>
+                    <td>{{ case.client }}</td>
+                    <td><span class="badge" [class]="case.statusClass">{{ case.status }}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quick AI Widget -->
+          <div class="section-card ai-quick-card">
+            <h2>Générateur d'actes IA rapide</h2>
+            <div class="ai-box">
+              <textarea 
+                placeholder="Ex: Rédige une mise en demeure pour défaut de paiement de loyers d'un montant de 1 500 000 FCFA..." 
+                [(ngModel)]="aiPrompt"
+                class="form-control"
+              ></textarea>
+              <button class="btn w-100" (click)="generateAI()" [disabled]="isGeneratingAI">
+                {{ isGeneratingAI ? 'Génération en cours...' : 'Générer le projet d\'acte' }}
+              </button>
+            </div>
+            <div *ngIf="aiOutput" class="ai-result-box">
+              <h4>Résultat généré par l'assistant :</h4>
+              <pre>{{ aiOutput }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. CASES VIEW -->
+      <div *ngIf="activeTab === 'cases'" class="tab-pane">
+        <div class="section-card">
+          <div class="section-header">
+            <h2>Tous les Dossiers</h2>
+            <button class="btn" (click)="addSampleCase()">+ Nouveau Dossier</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Réf</th>
+                  <th>Titre</th>
+                  <th>Client</th>
+                  <th>Catégorie</th>
+                  <th>Avocat Responsable</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let case of allCases">
+                  <td><code>{{ case.ref }}</code></td>
+                  <td>{{ case.title }}</td>
+                  <td>{{ case.client }}</td>
+                  <td>{{ case.category }}</td>
+                  <td>{{ case.lawyer }}</td>
+                  <td><span class="badge" [class]="case.statusClass">{{ case.status }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. CALENDAR VIEW -->
+      <div *ngIf="activeTab === 'calendar'" class="tab-pane">
+        <div class="section-card">
+          <h2>Calendrier des Audiences & Procédures</h2>
+          <div class="calendar-agenda">
+            <div class="agenda-item" *ngFor="let item of agendaItems">
+              <div class="agenda-date">
+                <span class="day">{{ item.day }}</span>
+                <span class="month">{{ item.month }}</span>
+              </div>
+              <div class="agenda-details">
+                <h3>{{ item.title }}</h3>
+                <p>📍 {{ item.location }} | 🕒 {{ item.time }}</p>
+                <p class="description">{{ item.desc }}</p>
+              </div>
+              <div class="agenda-status">
+                <span class="badge bg-secondary">{{ item.status }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. AI CHAT VIEW -->
+      <div *ngIf="activeTab === 'ia'" class="tab-pane">
+        <div class="ai-chat-interface">
+          <div class="chat-sidebar">
+            <h3>Historique de recherche</h3>
+            <ul>
+              <li>🔍 Jurisprudence licenciement abusif</li>
+              <li>🔍 Article 14 traité OHADA</li>
+              <li>🔍 Modèle contrat de bail Dakar</li>
+            </ul>
+          </div>
+          <div class="chat-main">
+            <div class="chat-messages">
+              <div class="msg system">
+                <p><strong>Assistant IA LegalOS :</strong> Bonjour Maître. Comment puis-je vous assister aujourd'hui ? Je peux analyser vos contrats, rédiger des projets d'actes ou chercher des jurisprudences.</p>
+              </div>
+              <div class="msg user" *ngFor="let chat of chatMessages">
+                <p><strong>Vous :</strong> {{ chat.user }}</p>
+                <div class="msg reply">
+                  <p><strong>Assistant IA :</strong></p>
+                  <pre>{{ chat.reply }}</pre>
+                </div>
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Posez votre question juridique ou décrivez l'acte à générer..."
+                [(ngModel)]="chatInput"
+                (keyup.enter)="sendChatMessage()"
+              >
+              <button class="btn" (click)="sendChatMessage()">Envoyer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. BILLING VIEW -->
+      <div *ngIf="activeTab === 'billing'" class="tab-pane">
+        <div class="section-card">
+          <h2>Gestion de la Facturation</h2>
+          <div class="billing-summary">
+            <div class="summary-box">
+              <h3>Chiffre d'Affaires Encissé</h3>
+              <p class="amount">14 250 000 FCFA</p>
+            </div>
+            <div class="summary-box">
+              <h3>Factures Impayées</h3>
+              <p class="amount overdue">3 400 000 FCFA</p>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>N° Facture</th>
+                  <th>Client</th>
+                  <th>Montant HT</th>
+                  <th>Date d'échéance</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>FAC-2026-0041</code></td>
+                  <td>SOCIETE GENERALE CI</td>
+                  <td>2 500 000 FCFA</td>
+                  <td>15/07/2026</td>
+                  <td><span class="badge bg-warning">Envoyé</span></td>
+                </tr>
+                <tr>
+                  <td><code>FAC-2026-0040</code></td>
+                  <td>Cabinet médical Almadies</td>
+                  <td>850 000 FCFA</td>
+                  <td>01/07/2026</td>
+                  <td><span class="badge bg-success">Payé</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
